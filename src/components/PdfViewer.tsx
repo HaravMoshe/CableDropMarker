@@ -160,17 +160,18 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     }
   }, [selectedMarkerId])
   
-  const selectMarker = useCallback((id: string) => {
-    setSelectedMarkerId(id)
+ const selectMarker = useCallback((id: string) => {
+  setSelectedMarkerId(id)
+  
+  // Find the marker and navigate to its page
+  const marker = markers.find(m => m.id === id)
+  if (marker && marker.pageIndex !== currentPageIndex) {
+    setCurrentPageIndex(marker.pageIndex)
     
-    // Find the marker and navigate to its page
-    const marker = markers.find(m => m.id === id)
-    if (marker && marker.pageIndex !== currentPageIndex) {
-      setCurrentPageIndex(marker.pageIndex)
-      const { PageNavigator } = pageNavigationPluginInstance
-      PageNavigator.jumpToPage(marker.pageIndex + 1) // +1 because viewer is 1-indexed
-    }
-  }, [markers, currentPageIndex, pageNavigationPluginInstance])
+    // Use the jumpToPage method from the plugin directly
+    pageNavigationPluginInstance.jumpToPage(marker.pageIndex + 1) // +1 because viewer is 1-indexed
+  }
+}, [markers, currentPageIndex, pageNavigationPluginInstance])
   
   const toggleMarkerView = useCallback(() => {
     setShowAllMarkers(prev => !prev)
