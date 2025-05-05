@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { 
-  ArrowUpTrayIcon, 
-  XMarkIcon,
-  ExclamationCircleIcon
+  ArrowUpTray as ArrowUpTrayIcon, 
+  X as XMarkIcon,
+  AlertCircle as ExclamationCircleIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
