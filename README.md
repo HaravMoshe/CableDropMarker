@@ -1,12 +1,16 @@
-# Drop Marker Tool (Web UI)
+# Drop Marker Tool (Web)
 
 ## Features
-- Upload PDFs (multi-page)
-- Click to drop with label, qty, type, location, purpose
-- Export to CSV
+- Upload and render PDFs with zoom + navigation
+- Click to drop a marker and enter form details
+- Auto-labeling
+- Marker list and CSV export
 - LocalStorage persistence
-- Vercel compatible (no canvas error)
 
-## Usage
+## Setup
+```bash
 npm install
 npm run dev
+```
+
+Visit: http://localhost:3000
