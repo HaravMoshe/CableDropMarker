@@ -3,7 +3,7 @@
 import React from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Marker, PURPOSE_COLORS } from '@/types/marker'
-import { Trash2Icon } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 
 type MarkerItemProps = {
   marker: Marker
@@ -13,7 +13,10 @@ type MarkerItemProps = {
 }
 
 export function MarkerItem({ marker, onDelete, onSelect, isSelected }: MarkerItemProps) {
-  const colorVariant = PURPOSE_COLORS[marker.purpose] || 'default'
+  // Fix: Explicitly type the colorVariant as one of the accepted values
+  const colorVariant = PURPOSE_COLORS[marker.purpose] as 
+    "network" | "power" | "data" | "audio" | "voice" | "security" | "control" | "other" | 
+    "default" | "destructive" | "outline" | "secondary" | undefined;
   
   return (
     <div 
@@ -37,7 +40,7 @@ export function MarkerItem({ marker, onDelete, onSelect, isSelected }: MarkerIte
         }}
         className="text-gray-400 hover:text-red-500"
       >
-        <Trash2Icon className="h-4 w-4" />
+        <Trash2 className="h-4 w-4" />
       </button>
     </div>
   )
