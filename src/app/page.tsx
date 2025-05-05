@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { 
-  ArrowUpTray as ArrowUpTrayIcon, 
+  Upload as ArrowUpTrayIcon, 
   X as XMarkIcon,
   AlertCircle as ExclamationCircleIcon
 } from 'lucide-react'
@@ -27,7 +27,6 @@ export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Check if running on client side
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsPdfLoaded(true)
@@ -38,13 +37,10 @@ export default function Home() {
     const files = e.target.files
     if (files && files.length > 0) {
       const file = files[0]
-      
-      // Validate file type
       if (file.type !== 'application/pdf') {
         setError('Please upload a valid PDF file')
         return
       }
-      
       setError(null)
       setPdfFile(file)
     }
@@ -59,7 +55,7 @@ export default function Home() {
       <header className="bg-white border-b px-6 py-4 shadow-sm">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-gray-800">Cable Drop Marker</h1>
-          
+
           <div className="flex items-center space-x-3">
             {!pdfFile ? (
               <div>
