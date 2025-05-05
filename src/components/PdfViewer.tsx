@@ -106,9 +106,9 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     }
   }, [file])
   
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPageIndex(page - 1) // PDF Viewer is 1-indexed, but we use 0-indexed
-  }, [])
+  const handlePageChange = useCallback((e: { currentPage: number }) => {
+  setCurrentPageIndex(e.currentPage - 1) // PDF Viewer is 1-indexed, but we use 0-indexed
+}, [])
   
   const handlePdfClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!viewerContainerRef.current) return
