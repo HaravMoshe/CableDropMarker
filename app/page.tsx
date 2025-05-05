@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { pdfjs } from "pdfjs-dist";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/build/pdf";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.entry";
 import Papa from "papaparse";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export default function HomePage() {
   const [pdfFile, setPdfFile] = useState(null);
@@ -18,9 +19,8 @@ export default function HomePage() {
   useEffect(() => {
     if (pdfFile) {
       const reader = new FileReader();
-      reader.onload = async function () {
-        const loadingTask = pdfjs.getDocument({ data: reader.result });
-        const doc = await loadingTask.promise;
+      reader.onload = async () => {
+        const doc = await getDocument({ data: reader.result }).promise;
         setPdfDoc(doc);
       };
       reader.readAsArrayBuffer(pdfFile);
