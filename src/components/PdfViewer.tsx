@@ -14,7 +14,6 @@ import { MarkerForm } from '@/components/MarkerForm'
 import { MarkersList } from '@/components/MarkersList'
 import { Marker, PURPOSE_COLORS } from '@/types/marker'
 
-// Import styles
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/default-layout/lib/styles/index.css'
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css'
@@ -83,46 +82,35 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     }
   }, [markers])
 
-useEffect(() => {
-  if (file) {
-    try {
-      const url = URL.createObjectURL(file);
-      setFileUrl(url);
-      console.log("Created URL for PDF:", url); // Add logging
-      
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } catch (error) {
-      console.error("Error creating URL from file:", error);
+  useEffect(() => {
+    if (file) {
+      try {
+        const url = URL.createObjectURL(file)
+        setFileUrl(url)
+        console.log("Created URL for PDF:", url)
+        return () => URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error creating URL from file:", error)
+      }
     }
-  }
-}, [file]);
+  }, [file])
+
+  useEffect(() => {
+    if (fileUrl) {
+      console.log("Rendering PDF with URL:", fileUrl)
+    }
+  }, [fileUrl])
 
   const handlePageChange = useCallback((e: { currentPage: number }) => {
     setCurrentPageIndex(e.currentPage - 1)
   }, [])
 
   const handlePdfClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-  console.log("PDF clicked", e);
-  if (!viewerContainerRef.current) {
-    console.log("No viewer container reference");
-    return;
-  }
-  
-  // Rest of your click handler...
-  
-  console.log("Setting marker position:", { x, y, pageIndex });
-  setNewMarkerPosition({ x, y, pageIndex });
-  setMarkerFormOpen(true);
-}, []);
-
-	// Add a check to see if the viewer is rendering correctly
-	useEffect(() => {
-	if (fileUrl) {
-    console.log("Rendering PDF with URL:", fileUrl);
-	}
-	}, [fileUrl]);
+    console.log("PDF clicked", e)
+    if (!viewerContainerRef.current) {
+      console.log("No viewer container reference")
+      return
+    }
 
     const container = viewerContainerRef.current
     const pageLayer = e.target as HTMLElement
@@ -141,6 +129,7 @@ useEffect(() => {
     const x = (e.clientX - pageRect.left) / pageRect.width
     const y = (e.clientY - pageRect.top) / pageRect.height
 
+    console.log("Setting marker position:", { x, y, pageIndex })
     setNewMarkerPosition({ x, y, pageIndex })
     setMarkerFormOpen(true)
   }, [])
