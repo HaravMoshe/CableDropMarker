@@ -48,6 +48,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   const [newMarkerPosition, setNewMarkerPosition] = useState<{ x: number; y: number; pageIndex: number }>({ x: 0, y: 0, pageIndex: 0 });
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | undefined>(undefined);
   const [showAllMarkers, setShowAllMarkers] = useState<boolean>(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const viewerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -64,33 +65,26 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('cableDropMarkers');
-      if (saved) {
-        try {
-          setMarkers(JSON.parse(saved));
-        } catch (e) {
-          console.error('Error loading markers from localStorage:', e);
-        }
+    if (file) {
+      try {
+        const url = URL.createObjectURL(file);
+        console.log("Generated object URL for PDF:", url);
+        setFileUrl(url);
+        return () => {
+          URL.revokeObjectURL(url);
+        };
+      } catch (err) {
+        console.error("Failed to create object URL:", err);
+        setPdfError("Error creating PDF preview.");
       }
     }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && markers.length > 0) {
-      localStorage.setItem('cableDropMarkers', JSON.stringify(markers));
-    }
-  }, [markers]);
-
-  useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setFileUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    }
   }, [file]);
+
+  useEffect(() => {
+    if (fileUrl) {
+      console.log("Attempting to render PDF from:", fileUrl);
+    }
+  }, [fileUrl]);
 
   const handlePageChange = useCallback((e: { currentPage: number }) => {
     setCurrentPageIndex(e.currentPage - 1);
@@ -153,28 +147,39 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   }, []);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full border-2 border-blue-500">
       <div className="flex-1 relative overflow-hidden">
-        <div
-          className="absolute inset-0 z-10"
-          ref={viewerContainerRef}
-          onClick={handlePdfClick}
-        >
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-            <Viewer
-              fileUrl={fileUrl}
-              defaultScale={SpecialZoomLevel.PageWidth}
-              plugins={[
-                defaultLayoutPluginInstance,
-                pageNavigationPluginInstance,
-                zoomPluginInstance,
-              ]}
-              onPageChange={handlePageChange}
-            />
-          </Worker>
-        </div>
+        {pdfError ? (
+          <div className="flex items-center justify-center h-full text-red-600 font-semibold">
+            {pdfError}
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0 z-10"
+            ref={viewerContainerRef}
+            onClick={handlePdfClick}
+            style={{ backgroundColor: '#f8fafc' }}
+          >
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+              <Viewer
+                fileUrl={fileUrl}
+                defaultScale={SpecialZoomLevel.PageWidth}
+                plugins={[
+                  defaultLayoutPluginInstance,
+                  pageNavigationPluginInstance,
+                  zoomPluginInstance,
+                ]}
+                onPageChange={handlePageChange}
+                onDocumentLoadFail={(error) => {
+                  console.error("PDF failed to load:", error.message || error);
+                  setPdfError("Failed to load PDF. Please check the file and try again.");
+                }}
+              />
+            </Worker>
+          </div>
+        )}
 
-        {markers
+        {!pdfError && markers
           .filter(marker => marker.pageIndex === currentPageIndex)
           .map(marker => {
             const colorVariant = PURPOSE_COLORS[marker.purpose] || 'default';
