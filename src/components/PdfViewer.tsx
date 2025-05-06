@@ -48,7 +48,6 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   const [newMarkerPosition, setNewMarkerPosition] = useState<{ x: number; y: number; pageIndex: number }>({ x: 0, y: 0, pageIndex: 0 });
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | undefined>(undefined);
   const [showAllMarkers, setShowAllMarkers] = useState<boolean>(false);
-  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const viewerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -75,7 +74,6 @@ export default function PdfViewer({ file }: PdfViewerProps) {
         };
       } catch (err) {
         console.error("Failed to create object URL:", err);
-        setPdfError("Error creating PDF preview.");
       }
     }
   }, [file]);
@@ -143,37 +141,30 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   return (
     <div className="flex h-full border-2 border-blue-500">
       <div className="flex-1 relative overflow-hidden">
-        {pdfError ? (
-          <div className="flex items-center justify-center h-full text-red-600 font-semibold">
-            {pdfError}
-          </div>
-        ) : (
-          <div
-            className="absolute inset-0 z-10"
-            ref={viewerContainerRef}
-            onClick={handlePdfClick}
-            style={{ backgroundColor: '#f8fafc' }}
-          >
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-              <Viewer
-                fileUrl={fileUrl}
-                defaultScale={SpecialZoomLevel.PageWidth}
-                plugins={[
-                  defaultLayoutPluginInstance,
-                  pageNavigationPluginInstance,
-                  zoomPluginInstance,
-                ]}
-                onPageChange={handlePageChange}
-                onDocumentLoadError={(error) => {
-                  console.error("PDF failed to load:", error.message || error);
-                  setPdfError("Failed to load PDF. Please check the file and try again.");
-                }}
-              />
-            </Worker>
-          </div>
-        )}
+        <div
+          className="absolute inset-0 z-10"
+          ref={viewerContainerRef}
+          onClick={handlePdfClick}
+          style={{ backgroundColor: '#f8fafc' }}
+        >
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+            <Viewer
+              fileUrl={fileUrl}
+              defaultScale={SpecialZoomLevel.PageWidth}
+              plugins={[
+                defaultLayoutPluginInstance,
+                pageNavigationPluginInstance,
+                zoomPluginInstance,
+              ]}
+              onPageChange={handlePageChange}
+              onDocumentLoad={(e) => {
+                console.log("PDF loaded with", e.doc.numPages, "pages.");
+              }}
+            />
+          </Worker>
+        </div>
 
-        {!pdfError && markers
+        {markers
           .filter(marker => marker.pageIndex === currentPageIndex)
           .map(marker => {
             const colorVariant = PURPOSE_COLORS[marker.purpose] || 'default';
