@@ -68,7 +68,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     if (file) {
       try {
         const url = URL.createObjectURL(file);
-        console.log("Generated object URL for PDF:", url);
+        console.log("Generated PDF object URL:", url);
         setFileUrl(url);
         return () => {
           URL.revokeObjectURL(url);
@@ -79,12 +79,6 @@ export default function PdfViewer({ file }: PdfViewerProps) {
       }
     }
   }, [file]);
-
-  useEffect(() => {
-    if (fileUrl) {
-      console.log("Attempting to render PDF from:", fileUrl);
-    }
-  }, [fileUrl]);
 
   const handlePageChange = useCallback((e: { currentPage: number }) => {
     setCurrentPageIndex(e.currentPage - 1);
@@ -170,7 +164,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
                   zoomPluginInstance,
                 ]}
                 onPageChange={handlePageChange}
-                onDocumentLoadFail={(error) => {
+                onDocumentLoadError={(error) => {
                   console.error("PDF failed to load:", error.message || error);
                   setPdfError("Failed to load PDF. Please check the file and try again.");
                 }}
