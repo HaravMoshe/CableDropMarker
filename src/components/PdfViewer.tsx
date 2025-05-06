@@ -14,7 +14,6 @@ import { MarkerForm } from '@/components/MarkerForm';
 import { MarkersList } from '@/components/MarkersList';
 import { Marker, PURPOSE_COLORS } from '@/types/marker';
 
-// Import styles
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
@@ -85,17 +84,11 @@ export default function PdfViewer({ file }: PdfViewerProps) {
 
   useEffect(() => {
     if (file) {
-      try {
-        const url = URL.createObjectURL(file);
-        setFileUrl(url);
-        console.log("Created URL for PDF:", url);
-
-        return () => {
-          URL.revokeObjectURL(url);
-        };
-      } catch (error) {
-        console.error("Error creating URL from file:", error);
-      }
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
     }
   }, [file]);
 
@@ -104,11 +97,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
   }, []);
 
   const handlePdfClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    console.log("PDF clicked", e);
-    if (!viewerContainerRef.current) {
-      console.log("No viewer container reference");
-      return;
-    }
+    if (!viewerContainerRef.current) return;
 
     const container = viewerContainerRef.current;
     const pageLayer = e.target as HTMLElement;
@@ -127,16 +116,9 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     const x = (e.clientX - pageRect.left) / pageRect.width;
     const y = (e.clientY - pageRect.top) / pageRect.height;
 
-    console.log("Setting marker position:", { x, y, pageIndex });
     setNewMarkerPosition({ x, y, pageIndex });
     setMarkerFormOpen(true);
   }, []);
-
-  useEffect(() => {
-    if (fileUrl) {
-      console.log("Rendering PDF with URL:", fileUrl);
-    }
-  }, [fileUrl]);
 
   const addMarker = useCallback((markerData: Omit<Marker, 'id' | 'label' | 'createdAt'>) => {
     const existingLabels = markers.map(m => m.label);
@@ -145,7 +127,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
       id: generateUniqueId(),
       label: newLabel,
       createdAt: Date.now(),
-      ...markerData
+      ...markerData,
     };
     setMarkers(prev => [...prev, newMarker]);
   }, [markers]);
@@ -178,7 +160,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
           ref={viewerContainerRef}
           onClick={handlePdfClick}
         >
-          <Worker workerUrl="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js">
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
             <Viewer
               fileUrl={fileUrl}
               defaultScale={SpecialZoomLevel.PageWidth}
@@ -230,6 +212,23 @@ export default function PdfViewer({ file }: PdfViewerProps) {
 
       <div className="w-80 border-l h-full overflow-hidden">
         <MarkersList
+          markers={markers}
+          onDelete={deleteMarker}
+          onSelectMarker={selectMarker}
+          selectedMarkerId={selectedMarkerId}
+          currentPageIndex={currentPageIndex}
+          showAll={showAllMarkers}
+          onToggleView={toggleMarkerView}
+        />
+      </div>
 
-::contentReference[oaicite:33]{index=33}
- 
+      <MarkerForm
+        open={markerFormOpen}
+        onClose={() => setMarkerFormOpen(false)}
+        onSave={addMarker}
+        position={newMarkerPosition}
+        existingOptions={existingOptions}
+      />
+    </div>
+  );
+}
