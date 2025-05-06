@@ -83,20 +83,46 @@ export default function PdfViewer({ file }: PdfViewerProps) {
     }
   }, [markers])
 
-  useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file)
-      setFileUrl(url)
-      return () => URL.revokeObjectURL(url)
+useEffect(() => {
+  if (file) {
+    try {
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
+      console.log("Created URL for PDF:", url); // Add logging
+      
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } catch (error) {
+      console.error("Error creating URL from file:", error);
     }
-  }, [file])
+  }
+}, [file]);
 
   const handlePageChange = useCallback((e: { currentPage: number }) => {
     setCurrentPageIndex(e.currentPage - 1)
   }, [])
 
   const handlePdfClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!viewerContainerRef.current) return
+  console.log("PDF clicked", e);
+  if (!viewerContainerRef.current) {
+    console.log("No viewer container reference");
+    return;
+  }
+  
+  // Rest of your click handler...
+  
+  console.log("Setting marker position:", { x, y, pageIndex });
+  setNewMarkerPosition({ x, y, pageIndex });
+  setMarkerFormOpen(true);
+}, []);
+
+	// Add a check to see if the viewer is rendering correctly
+	useEffect(() => {
+	if (fileUrl) {
+    console.log("Rendering PDF with URL:", fileUrl);
+	}
+	}, [fileUrl]);
 
     const container = viewerContainerRef.current
     const pageLayer = e.target as HTMLElement
@@ -159,7 +185,7 @@ export default function PdfViewer({ file }: PdfViewerProps) {
           ref={viewerContainerRef}
           onClick={handlePdfClick}
         >
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+          <Worker workerUrl="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js">
             <Viewer
               fileUrl={fileUrl}
               defaultScale={SpecialZoomLevel.PageWidth}
